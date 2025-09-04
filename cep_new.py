@@ -219,57 +219,6 @@ if uploaded_file is not None:
         else:
             st.warning("Required columns ('description', 'assigned_department') for issue categorization are missing in the uploaded dataset.")
 
-        # --- Dashboard Insights ---
-        st.subheader("5. Dashboard Insights")
-
-        if 'assigned_department' in df.columns and 'escalated' in df.columns:
-            st.write("### Escalation Rate by Assigned Department")
-            escalation_by_dept = df.groupby('assigned_department')['escalated'].mean().sort_values(ascending=False) * 100
-            if not escalation_by_dept.empty:
-                plt.figure(figsize=(12, 7))
-                sns.barplot(x=escalation_by_dept.index, y=escalation_by_dept.values, palette='viridis')
-                plt.xticks(rotation=45, ha='right')
-                plt.xlabel("Assigned Department")
-                plt.ylabel("Escalation Rate (%)")
-                plt.title("Escalation Rate by Assigned Department")
-                st.pyplot(plt.gcf())
-            else:
-                st.warning("Could not calculate escalation rate by department.")
-        else:
-            st.warning("Required columns ('assigned_department', 'escalated') are missing for department-based escalation analysis.")
-
-        if 'status' in df.columns and 'escalated' in df.columns:
-            st.write("### Escalation Rate by Status")
-            valid_statuses = ['Pending', 'In Progress', 'Resolved']
-            df_filtered_status = df[df['status'].isin(valid_statuses)].copy()
-            if not df_filtered_status.empty:
-                escalation_by_status = df_filtered_status.groupby('status')['escalated'].mean().sort_values(ascending=False) * 100
-                plt.figure(figsize=(8, 5))
-                sns.barplot(x=escalation_by_status.index, y=escalation_by_status.values, palette='plasma')
-                plt.xticks(rotation=45, ha='right')
-                plt.xlabel("Issue Status")
-                plt.ylabel("Escalation Rate (%)")
-                plt.title("Escalation Rate by Issue Status")
-                st.pyplot(plt.gcf())
-            else:
-                st.warning("No valid status data found for escalation analysis.")
-        else:
-            st.warning("The 'status' or 'escalated' column is not available for status-based escalation analysis.")
-
-        if 'resolution_time' in df.columns and 'escalated' in df.columns:
-            st.write("### Impact of Resolution Time on Escalation")
-            df_viz = df[df['resolution_time'] < df['resolution_time'].quantile(0.95)].copy()
-            avg_resolution_time_by_escalation = df_viz.groupby('escalated')['resolution_time'].mean()
-            avg_resolution_time_by_escalation.index = avg_resolution_time_by_escalation.index.map({0: 'Not Escalated', 1: 'Escalated'})
-
-            plt.figure(figsize=(7, 5))
-            sns.barplot(x=avg_resolution_time_by_escalation.index, y=avg_resolution_time_by_escalation.values, palette='magma')
-            plt.xlabel("Escalation Status")
-            plt.ylabel("Average Resolution Time (days)")
-            plt.title("Average Resolution Time vs. Escalation Status")
-            st.pyplot(plt.gcf())
-        else:
-            st.warning("Required columns ('resolution_time', 'escalated') are missing for resolution time analysis.")
 
         st.write("### Daily Issue Submission Trend")
         if 'date_reported' in df.columns:
